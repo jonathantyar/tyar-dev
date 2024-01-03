@@ -20,7 +20,7 @@ export default function CursorBackground() {
   return (
     <div
       onMouseMove={onMouseMove}
-      className="pointer-events-auto fixed inset-0 z-3 transition duration-300 lg:absolute"
+      className="pointer-events-none lg:pointer-events-auto fixed inset-1 z-0 transition duration-300 lg:absolute"
       style={backgroundStyle}
     />
   )
