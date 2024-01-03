@@ -78,12 +78,12 @@ export default async function Home() {
               <p className="mt-4 max-w-xs leading-normal">
                 {bio.introduction}
               </p>
-              <a href={bio.resume} target="_blank" rel="noreferrer" className="my-8 bg-teal-400/10 hover:bg-teal-200/10 transition text-teal-300 fill-teal-300 font-bold px-8 py-2 rounded-md inline-flex items-center gap-3">
+              <a href={bio.resume} target="_blank" rel="noreferrer" className="z-10 my-8 bg-teal-400/10 hover:bg-teal-200/10 transition text-teal-300 fill-teal-300 font-bold px-8 py-2 rounded-md inline-flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><path d="M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zm384 64H256V0L384 128z" /></svg>
                 Resume
               </a>
               <nav className="nav hidden lg:block" aria-label="In-page jump links">
-                <ul className="mt-16 w-max">
+                <ul className="mt-16 w-max z-10">
                   <li>
                     <a
                       className="group flex items-center py-3 active"
@@ -114,7 +114,7 @@ export default async function Home() {
                 </ul>
               </nav>
             </div>
-            <ul className="ml-1 mt-8 flex items-center" aria-label="Social media">
+            <ul className="ml-1 mt-8 flex items-center z-10" aria-label="Social media">
               {social.length > 0 && social.map((item, index) => (
                 <li className="mr-5 text-xs" key={index}>
                   <a
