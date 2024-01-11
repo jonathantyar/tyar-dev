@@ -3,6 +3,7 @@ import { formatDate } from "@/lib/helper";
 import { schema } from "@/types/cms";
 import Image from "next/image";
 import CursorBackground from "./cursorBackground";
+import { Metadata, ResolvingMetadata } from "next";
 
 async function getData() {
   return directus.query<schema>(`
@@ -14,6 +15,7 @@ async function getData() {
       introduction
       photo
       resume
+      keywords
     }
     social {
       name
@@ -41,6 +43,16 @@ async function getData() {
   }`)
 }
 
+export async function generateMetadata(
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { bio } = await getData();
+  return {
+    title: `${bio.name} - ${bio.tagline}`,
+    description: `${bio.tagline} - ${bio.introduction}`,
+    keywords: bio.keywords.toString()
+  }
+}
 
 export default async function Home() {
   const { bio, social, experience, projects } = await getData();

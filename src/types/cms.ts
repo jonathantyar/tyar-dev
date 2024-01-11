@@ -12,6 +12,7 @@ export interface bio {
   bio: string;
   resume: string;
   photo: string;
+  keywords: string[];
 }
 
 export interface experience {

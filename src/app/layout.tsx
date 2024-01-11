@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { Anonymous_Pro } from 'next/font/google'
 import './globals.css'
 import "@fortawesome/fontawesome-svg-core/styles.css";
@@ -9,11 +8,6 @@ const inter = Anonymous_Pro({
   weight: '400'
 })
 config.autoAddCss = false;
-
-export const metadata: Metadata = {
-  title: 'Jonathan Tyar',
-  description: 'Experienced Fullstack Engineer - I build exceptional and accessible digital experiences for the web',
-}
 
 export default function RootLayout({
   children,
