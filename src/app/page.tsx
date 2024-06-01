@@ -5,44 +5,55 @@ import Image from "next/image";
 import CursorBackground from "./cursorBackground";
 import { Metadata } from "next";
 
-export const revalidate = 60 * 60;
+export const revalidate = 60 * process.env.CACHE_INVALIDATE;
 
 async function getData() {
-  return directus.query<schema>(`
-  query {
-    bio {
-      name
-      tagline
-      bio
-      introduction
-      photo
-      resume
-      keywords
-    }
-    social {
-      name
-      link
-      icon
-    }
-    experience(sort: ["-date_start"]) {
-      position
-      company
-      company_website
-      present
-      date_start
-      date_end
-      skills
-      detail
-    }
-    projects {
-      name
-      cover
-      detail
-      project_link
-      skills
-      people
-    }
-  }`);
+  try {
+    const result = await directus.query<schema>(`
+      query {
+        bio {
+          name
+          tagline
+          bio
+          introduction
+          photo {
+            id
+          }
+          resume
+          keywords
+        }
+        social {
+          name
+          link
+          icon
+        }
+        experience(sort: ["-date_start"]) {
+          position
+          company
+          company_website
+          present
+          date_start
+          date_end
+          skills
+          detail
+        }
+        projects {
+          name
+          cover {
+            id
+          }
+          detail
+          project_link
+          skills
+          people
+        }
+      }`);
+    console.log(result);
+    return result;
+  } catch (error: any) {
+    console.log('failed', error.errors[0].extensions);
+    throw new Error('Failed to fetch data');
+  }
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -79,7 +90,7 @@ export default async function Home() {
                 data-nimg={1}
                 className="w-3/4 rounded-lg border-2 border-slate-200/10 transition group-hover:border-slate-200/30 sm:order-1 sm:col-span-2 sm:translate-y-1 mb-12"
                 style={{ color: 'transparent' }}
-                src={process.env.IMAGE_ENDPOINT + bio.photo + '.jpg'}
+                src={process.env.IMAGE_ENDPOINT + bio.photo.id + '.jpg'}
               />
               <h1 className="text-4xl font-bold tracking-tight text-slate-200 sm:text-5xl">
                 <a href="/">{bio.name}</a>
@@ -327,7 +338,7 @@ export default async function Home() {
                             data-nimg={1}
                             className="rounded border-2 border-slate-200/10 transition group-hover:border-slate-200/30 sm:order-1 sm:col-span-2 sm:translate-y-1"
                             style={{ color: 'transparent' }}
-                            src={process.env.IMAGE_ENDPOINT + item.cover + '.png'}
+                            src={process.env.IMAGE_ENDPOINT + item.cover.id + '.png'}
                           />
                         </div>
                       </li>

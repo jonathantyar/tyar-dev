@@ -11,7 +11,9 @@ export interface bio {
   introduction: string;
   bio: string;
   resume: string;
-  photo: string;
+  photo: {
+    id: string;
+  };
   keywords: string[];
 }
 
@@ -28,7 +30,9 @@ export interface experience {
 
 export interface project {
   name: string;
-  cover: string;
+  cover: {
+    id: string;
+  };
   project_link: string | null;
   detail: string;
   skills: string[];
