@@ -1,7 +1,0 @@
-{
-    "functions": {
-        "src/**/*": {
-            "runtime": "nodejs24.x"
-        }
-    }
-}
