@@ -1,0 +1,159 @@
+.bentoGrid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--spacing-lg);
+    width: 100%;
+}
+
+.bentoItem {
+    background: var(--color-white);
+    border: 2px solid var(--color-black);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.bentoItem:hover {
+    transform: translateY(-4px);
+    box-shadow: 8px 8px 0 var(--color-black);
+}
+
+.verticalBento {
+    gap: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Span Classes */
+.full {
+    grid-column: span 12;
+}
+
+.half {
+    grid-column: span 6;
+}
+
+.third {
+    grid-column: span 4;
+}
+
+.twoThirds {
+    grid-column: span 8;
+}
+
+/* Height Classes */
+.small {
+    min-height: 200px;
+}
+
+.medium {
+    min-height: 300px;
+}
+
+.large {
+    min-height: 400px;
+}
+
+.auto {
+    min-height: auto;
+}
+
+/* Masonry Layout */
+.masonryGrid {
+    display: block;
+    column-count: 3;
+    column-gap: var(--spacing-lg);
+    width: 100%;
+    position: relative;
+}
+
+.masonryGrid .bentoItem {
+    margin-bottom: var(--spacing-lg);
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    min-width: 100%;
+    /* Override the global min-width */
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .bentoGrid {
+        gap: var(--spacing-md);
+    }
+
+    .verticalBento {
+        gap: var(--spacing-md);
+    }
+
+    .masonryGrid {
+        column-count: 2;
+        column-gap: var(--spacing-md);
+    }
+
+    .masonryGrid .bentoItem {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .twoThirds {
+        grid-column: span 12;
+    }
+
+    .third {
+        grid-column: span 6;
+    }
+}
+
+@media (max-width: 768px) {
+    .bentoGrid {
+        gap: var(--spacing-sm);
+        grid-template-columns: 1fr;
+    }
+
+    .verticalBento {
+        gap: var(--spacing-sm);
+    }
+
+    .masonryGrid {
+        column-count: 1;
+        column-gap: var(--spacing-sm);
+    }
+
+    .masonryGrid .bentoItem {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .bentoItem {
+        padding: var(--spacing-md);
+    }
+
+    .bentoItem:hover {
+        transform: translateY(-2px);
+        box-shadow: 4px 4px 0 var(--color-black);
+    }
+
+    .half,
+    .third,
+    .twoThirds,
+    .full {
+        grid-column: span 1;
+    }
+
+    .small,
+    .medium {
+        min-height: auto;
+    }
+
+    .large {
+        min-height: auto;
+    }
+}
+
+/* Specific fix for full width items in masonry */
+.masonryGrid .full {
+    column-span: all;
+    display: block;
+    width: 100%;
+}

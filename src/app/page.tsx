@@ -1,367 +1,244 @@
-import directus from "@/lib/directus"
-import { formatDate } from "@/lib/helper";
-import { schema } from "@/types/cms";
-import Image from "next/image";
-import CursorBackground from "./cursorBackground";
-import { Metadata } from "next";
+import { Hero } from '@/components/Hero';
+import { BentoGrid, BentoItem } from '@/components/BentoGrid';
+import { FadeIn } from '@/components/FadeIn';
+import { FloatingNav } from '@/components/FloatingNav';
+import styles from './page.module.css';
+import bentoStyles from '@/components/BentoGrid.module.css';
+import { ConnectingLines } from '@/components/ConnectingLines';
+import { getData } from '@/lib/directus';
 
-export const revalidate = 60 * process.env.CACHE_INVALIDATE;
-
-async function getData() {
-  try {
-    const result = await directus.query<schema>(`
-      query {
-        bio {
-          name
-          tagline
-          bio
-          introduction
-          photo {
-            id
-          }
-          resume
-          keywords
-        }
-        social {
-          name
-          link
-          icon
-        }
-        experience(sort: ["-date_start"]) {
-          position
-          company
-          company_website
-          present
-          date_start
-          date_end
-          skills
-          detail
-        }
-        projects {
-          name
-          cover {
-            id
-          }
-          detail
-          project_link
-          skills
-          people
-        }
-      }`);
-    console.log(result);
-    return result;
-  } catch (error: any) {
-    console.log('failed', error.errors[0].extensions);
-    throw new Error('Failed to fetch data');
-  }
-}
-
-export async function generateMetadata(): Promise<Metadata> {
-  const { bio } = await getData();
-  return {
-    title: `${bio.name} - ${bio.tagline}`,
-    description: `${bio.tagline} - ${bio.introduction}`,
-    keywords: bio.keywords.toString(),
-  };
-}
+export const revalidate = 60;
 
 export default async function Home() {
-  const { bio, social, experience, projects } = await getData();
+  const data = await getData();
+
+  const { bio, experience, projects } = data;
+
+  const experiences = experience.map((exp) => ({
+    title: exp.position,
+    company: exp.company,
+    period: `${exp.date_start ? exp.date_start.substring(0, 4) : ''} - ${exp.present ? 'Present' : (exp.date_end ? exp.date_end.substring(0, 4) : '')}`,
+    description: exp.detail,
+    tags: exp.skills || []
+  }));
+
+  const mappedProjects = projects.map((project) => ({
+    title: project.name,
+    description: project.detail,
+    link: project.project_link,
+    image: project.cover && project.cover.id ? `${process.env.IMAGE_ENDPOINT + project.cover.id + '.webp'}` : '',
+    tags: project.skills || []
+  }));
+
+  const photoUrl = bio.photo && bio.photo.id ? `${process.env.IMAGE_ENDPOINT + bio.photo.id + '.webp'}` : undefined;
 
   return (
-    <div className="group/spotlight relative">
-      <CursorBackground />
-      <div className="z-2 mx-auto min-h-screen max-w-screen-xl px-6 py-12  md:px-12 md:py-20 lg:px-24 lg:py-0">
-        <a
-          href="#content"
-          className="absolute left-0 top-0 block -translate-x-full rounded bg-gradient-to-br from-teal-400 via-blue-500 to-purple-600 px-4 py-3 text-sm font-bold uppercase tracking-widest text-white focus-visible:translate-x-0"
-        >
-          Skip to Content
-        </a>
-        <div className="lg:flex lg:justify-between lg:gap-4">
-          <header className="lg:sticky lg:top-0 lg:flex lg:max-h-screen lg:w-1/2 lg:flex-col lg:justify-between lg:py-24">
-            <div>
-              <Image
-                alt=""
-                loading="lazy"
-                width={500}
-                height={500}
-                decoding="async"
-                data-nimg={1}
-                className="w-3/4 rounded-lg border-2 border-slate-200/10 transition group-hover:border-slate-200/30 sm:order-1 sm:col-span-2 sm:translate-y-1 mb-12"
-                style={{ color: 'transparent' }}
-                src={process.env.IMAGE_ENDPOINT + bio.photo.id + '.jpg'}
-              />
-              <h1 className="text-4xl font-bold tracking-tight text-slate-200 sm:text-5xl">
-                <a href="/">{bio.name}</a>
-              </h1>
-              <h2 className="mt-3 text-lg font-medium tracking-tight text-slate-200 sm:text-xl">
-                {bio.tagline}
-              </h2>
-              <p className="mt-4 max-w-xs leading-normal">{bio.introduction}</p>
-              <a
-                href={bio.resume}
-                target="_blank"
-                rel="noreferrer"
-                className="z-20 my-8 bg-teal-400/10 hover:bg-teal-200/10 transition text-teal-300 fill-teal-300 font-bold px-8 py-2 rounded-md inline-flex items-center gap-3"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="16"
-                  width="12"
-                  viewBox="0 0 384 512"
-                >
-                  <path d="M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zm384 64H256V0L384 128z" />
-                </svg>
-                Resume
-              </a>
-              <nav className="nav hidden lg:block" aria-label="In-page jump links">
-                <ul className="mt-16 w-max z-20">
-                  <li>
-                    <a className="group flex items-center py-3 active" href="#about">
-                      <span className="nav-indicator mr-4 h-px w-8 bg-slate-600 transition-all group-hover:w-16 group-hover:bg-slate-200 group-focus-visible:w-16 group-focus-visible:bg-slate-200 motion-reduce:transition-none" />
-                      <span className="nav-text text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-slate-200 group-focus-visible:text-slate-200">
-                        About
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a className="group flex items-center py-3" href="#experience">
-                      <span className="nav-indicator mr-4 h-px w-8 bg-slate-600 transition-all group-hover:w-16 group-hover:bg-slate-200 group-focus-visible:w-16 group-focus-visible:bg-slate-200 motion-reduce:transition-none" />
-                      <span className="nav-text text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-slate-200 group-focus-visible:text-slate-200">
-                        Experience
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a className="group flex items-center py-3" href="#projects">
-                      <span className="nav-indicator mr-4 h-px w-8 bg-slate-600 transition-all group-hover:w-16 group-hover:bg-slate-200 group-focus-visible:w-16 group-focus-visible:bg-slate-200 motion-reduce:transition-none" />
-                      <span className="nav-text text-xs font-bold uppercase tracking-widest text-slate-500 group-hover:text-slate-200 group-focus-visible:text-slate-200">
-                        Projects
-                      </span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
+    <main className={styles.main}>
+      {/* Hero Section */}
+      <Hero
+        name={bio.name}
+        tagline={bio.tagline}
+        introduction={bio.introduction}
+        photoUrl={photoUrl}
+        resumeUrl={bio.resume} // assuming bio.resume is the URL or link
+      />
+
+      {/* About Section */}
+      <section className={styles.section} id="about">
+        <div className={styles.container}>
+          <FadeIn>
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionNumber}>01.</span>
+              <h2 className={styles.sectionTitle}>ABOUT</h2>
             </div>
-            <ul className="ml-1 mt-8 flex items-center z-20" aria-label="Social media">
-              {social.length > 0 &&
-                social.map((item, index) => (
-                  <li className="mr-5 text-xs" key={index}>
-                    <a
-                      className="block text-white hover:text-slate-200"
-                      href={item.link}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <span className="sr-only">{item.name}</span>
-                      <div
-                        className="h-6 w-6 fill-white hover:fill-slate-200"
-                        dangerouslySetInnerHTML={{
-                          __html: item.icon.replace('<svg', `<svg width="100%" height="100%"`),
-                        }}
-                      />
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          </header>
-          <main id="content" className="pt-24 lg:w-1/2 lg:py-24">
-            <section
-              id="about"
-              className="mb-16 scroll-mt-16 md:mb-24 lg:mb-24 lg:scroll-mt-24"
-              aria-label="About me"
-            >
-              <div className="sticky top-0 z-20 -mx-6 mb-4 w-screen bg-slate-900/75 px-6 py-5 backdrop-blur md:-mx-12 md:px-12 lg:sr-only lg:relative lg:top-auto lg:mx-auto lg:w-full lg:px-0 lg:py-0 lg:opacity-0">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 lg:sr-only">
-                  About
-                </h2>
-              </div>
-              <div>
-                <div dangerouslySetInnerHTML={{ __html: bio.bio }} />
-              </div>
-            </section>
-            <section
-              id="experience"
-              className="mb-16 scroll-mt-16 md:mb-24 lg:mb-36 lg:scroll-mt-24"
-              aria-label="Work experience"
-            >
-              <div className="sticky top-0 z-20 -mx-6 mb-4 w-screen bg-slate-900/75 px-6 py-5 backdrop-blur md:-mx-12 md:px-12 lg:sr-only lg:relative lg:top-auto lg:mx-auto lg:w-full lg:px-0 lg:py-0 lg:opacity-0">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 lg:sr-only">
-                  Experience
-                </h2>
-              </div>
-              <div>
-                <ol className="group/list">
-                  {experience.length > 0 &&
-                    experience.map((item, index) => (
-                      <li className="mb-12" key={index}>
-                        <div className="group relative grid pb-1 transition-all sm:grid-cols-8 sm:gap-8 md:gap-4 lg:hover:!opacity-100 lg:group-hover/list:opacity-50">
-                          <div className="absolute -inset-x-4 -inset-y-4 z-0 hidden rounded-md transition motion-reduce:transition-none lg:-inset-x-6 lg:block lg:group-hover:bg-slate-800/50 lg:group-hover:shadow-[inset_0_1px_0_0_rgba(148,163,184,0.1)] lg:group-hover:drop-shadow-lg" />
-                          <header className="z-10 mb-2 mt-1 text-xs font-semibold text-slate-500 sm:col-span-2">
-                            {formatDate(item.date_start, 'MMM YYYY')} —{' '}
-                            {item.present ? 'Present' : formatDate(item.date_end, 'MMM YYYY')}
-                          </header>
-                          <div className="z-10 sm:col-span-6">
-                            <h3 className="font-medium leading-snug text-slate-200">
-                              <div>
-                                <a
-                                  className="inline-flex items-baseline font-medium leading-tight text-slate-200 hover:text-teal-300 focus-visible:text-teal-300  group/link text-base"
-                                  href={item.company_website || '#'}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  aria-label={item.position + ' at ' + item.company}
-                                >
-                                  <span className="absolute -inset-x-4 -inset-y-2.5 hidden rounded md:-inset-x-6 md:-inset-y-4 lg:block" />
-                                  <span>
-                                    {item.position} · {/* */}{' '}
-                                    <span className="inline-block">
-                                      {item.company}
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        className="inline-block h-4 w-4 shrink-0 transition-transform group-hover/link:-translate-y-1 group-hover/link:translate-x-1 group-focus-visible/link:-translate-y-1 group-focus-visible/link:translate-x-1 motion-reduce:transition-none ml-1 translate-y-px"
-                                        aria-hidden="true"
-                                      >
-                                        <path
-                                          fillRule="evenodd"
-                                          d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z"
-                                          clipRule="evenodd"
-                                        />
-                                      </svg>
-                                    </span>
-                                  </span>
-                                </a>
-                              </div>
-                            </h3>
-                            <div
-                              className="mt-2 text-sm leading-normal"
-                              dangerouslySetInnerHTML={{ __html: item.detail }}
-                            />
-                            <ul className="mt-2 flex flex-wrap" aria-label="Technologies used">
-                              {item.skills.length > 0 &&
-                                item.skills.map((skill, index) => (
-                                  <li className="mr-1.5 mt-2" key={index}>
-                                    <div className="flex items-center rounded-full bg-teal-400/10 px-3 py-1 text-xs font-medium leading-5 text-teal-300 ">
-                                      {skill}
-                                    </div>
-                                  </li>
-                                ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                </ol>
-              </div>
-            </section>
-            <section
-              id="projects"
-              className="mb-16 scroll-mt-16 md:mb-24 lg:mb-36 lg:scroll-mt-24"
-              aria-label="Selected projects"
-            >
-              <div className="sticky top-0 z-20 -mx-6 mb-4 w-screen bg-slate-900/75 px-6 py-5 backdrop-blur md:-mx-12 md:px-12 lg:sr-only lg:relative lg:top-auto lg:mx-auto lg:w-full lg:px-0 lg:py-0 lg:opacity-0">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-200 lg:sr-only">
-                  Projects
-                </h2>
-              </div>
-              <div>
-                <ul className="group/list">
-                  {projects.length > 0 &&
-                    projects.map((item, index) => (
-                      <li className="mb-12" key={index}>
-                        <div className="group relative grid gap-4 pb-1 transition-all sm:grid-cols-8 sm:gap-8 md:gap-4 lg:hover:!opacity-100 lg:group-hover/list:opacity-50">
-                          <div className="absolute -inset-x-4 -inset-y-4 z-0 hidden rounded-md transition motion-reduce:transition-none lg:-inset-x-6 lg:block lg:group-hover:bg-slate-800/50 lg:group-hover:shadow-[inset_0_1px_0_0_rgba(148,163,184,0.1)] lg:group-hover:drop-shadow-lg" />
-                          <div className="z-10 sm:order-2 sm:col-span-6">
-                            <h3>
-                              <a
-                                className="inline-flex items-baseline font-medium leading-tight text-slate-200 hover:text-teal-300 focus-visible:text-teal-300  group/link text-base"
-                                href={item.project_link || '#'}
-                                target="_blank"
-                                rel="noreferrer"
-                                aria-label="Build a Spotify Connected App"
-                              >
-                                <span className="absolute -inset-x-4 -inset-y-2.5 hidden rounded md:-inset-x-6 md:-inset-y-4 lg:block" />
-                                <span>
-                                  {item.name}
-                                  {/* */}{' '}
-                                  <span className="inline-block">
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                      className="inline-block h-4 w-4 shrink-0 transition-transform group-hover/link:-translate-y-1 group-hover/link:translate-x-1 group-focus-visible/link:-translate-y-1 group-focus-visible/link:translate-x-1 motion-reduce:transition-none ml-1 translate-y-px"
-                                      aria-hidden="true"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69l-7.22 7.22a.75.75 0 000 1.06z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  </span>
-                                </span>
-                              </a>
-                            </h3>
-                            <div
-                              className="mt-2 text-sm leading-normal"
-                              dangerouslySetInnerHTML={{ __html: item.detail }}
-                            />
-                            <ul className="mt-2 flex flex-wrap" aria-label="Technologies used">
-                              {item.skills.length > 0 &&
-                                item.skills.map((skill, index) => (
-                                  <li className="mr-1.5 mt-2" key={index}>
-                                    <div className="flex items-center rounded-full bg-teal-400/10 px-3 py-1 text-xs font-medium leading-5 text-teal-300 ">
-                                      {skill}
-                                    </div>
-                                  </li>
-                                ))}
-                            </ul>
-                            <ul className="mt-2 flex flex-wrap" aria-label="People i worked with">
-                              {item.people.length > 0 &&
-                                item.people.map((skill, index) => (
-                                  <li className="mr-1.5 mt-2" key={index}>
-                                    <div className="flex items-center rounded-full bg-blue-400/10 px-3 py-1 text-xs font-medium leading-5 text-blue-300 ">
-                                      {skill}
-                                    </div>
-                                  </li>
-                                ))}
-                            </ul>
-                          </div>
-                          <Image
-                            alt=""
-                            loading="lazy"
-                            width={200}
-                            height={48}
-                            decoding="async"
-                            data-nimg={1}
-                            className="rounded border-2 border-slate-200/10 transition group-hover:border-slate-200/30 sm:order-1 sm:col-span-2 sm:translate-y-1"
-                            style={{ color: 'transparent' }}
-                            src={process.env.IMAGE_ENDPOINT + item.cover.id + '.png'}
-                          />
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            </section>
-            <footer className="max-w-md pb-16 text-sm text-slate-500 sm:pb-0">
-              <p>
-                Made in with {/* */}{' '}
-                <span className="font-medium text-slate-400 hover:text-teal-300 focus-visible:text-teal-300">
-                  Love
-                </span>{' '}
-                and{' '}
-                <span className="font-medium text-slate-400 hover:text-teal-300 focus-visible:text-teal-300">
-                  Passionate
-                </span>{' '}
-                in coding.
-              </p>
-            </footer>
-          </main>
+          </FadeIn>
+
+          <BentoGrid className="intro">
+            <FadeIn delay={0.2}>
+              <BentoItem span="half" height="auto">
+                <div className={styles.aboutContent}>
+                  <h3 className={styles.aboutTitle}>{bio.tagline} | Architect</h3>
+                  <div className={styles.aboutText} dangerouslySetInnerHTML={{ __html: bio.bio }} />
+                </div>
+              </BentoItem>
+            </FadeIn>
+            <div className={`${bentoStyles.verticalBento}`}>
+              <FadeIn delay={0.3}>
+                <BentoItem span="full" height="auto">
+                  <div className={styles.infoCard}>
+                    <h4 className={styles.infoLabel}>CURRENT ROLE</h4>
+                    <p className={styles.infoValue}>{experience[0]?.position || 'Senior Full Stack Engineer'}</p>
+                    <p className={styles.infoCompany}>{experience[0]?.company || 'Moladin'}</p>
+                  </div>
+                </BentoItem>
+              </FadeIn>
+
+              <FadeIn delay={0.35}>
+                <BentoItem span="full" height="auto">
+                  <div className={styles.infoCard}>
+                    <h4 className={styles.infoLabel}>SPECIALIZATION</h4>
+                    <p className={styles.infoValue}>Fintech, Compliance & Blockchain</p>
+                    <p className={styles.infoCompany}>Microservices Architecture</p>
+                  </div>
+                </BentoItem>
+              </FadeIn>
+
+              <FadeIn delay={0.4}>
+                <BentoItem span="full" height="auto">
+                  <div className={styles.infoCard}>
+                    <h4 className={styles.infoLabel}>EDUCATION</h4>
+                    <p className={styles.infoValue}>Computer Science</p>
+                    <p className={styles.infoCompany}>Soegijapranata Catholic University</p>
+                  </div>
+                </BentoItem>
+              </FadeIn></div>
+          </BentoGrid>
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* Experience Section */}
+      <section className={styles.section} id="work">
+        <div className={styles.container}>
+          <FadeIn>
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionNumber}>02.</span>
+              <h2 className={styles.sectionTitle}>EXPERIENCE</h2>
+            </div>
+          </FadeIn>
+
+          <BentoGrid className={bentoStyles.masonryGrid}>
+            <ConnectingLines count={experiences.length} itemPrefix="experience-card" />
+            {experiences.map((exp, index) => (
+              <FadeIn key={index} delay={0.1 * (index + 1)}>
+                <BentoItem span={`${index == 0 ? 'full' : 'half'}`} height="auto">
+                  <div className={styles.experienceCard} id={`experience-card-${index}`}>
+                    <div className={styles.experienceHeader}>
+                      <div>
+                        <h3 className={styles.experienceTitle}>{exp.title}</h3>
+                        <p className={styles.experienceCompany}>{exp.company}</p>
+                      </div>
+                      <span className={styles.experiencePeriod}>{exp.period}</span>
+                    </div>
+                    <div className={styles.experienceDescription} dangerouslySetInnerHTML={{ __html: exp.description }} />
+                    <div className={styles.tags}>
+                      {exp.tags.map((tag, i) => (
+                        <span key={i} className={styles.tag}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </BentoItem>
+              </FadeIn>
+            ))}
+          </BentoGrid>
+        </div>
+      </section>
+
+      {/* Projects Section */}
+      <section className={styles.section} id="projects">
+        <div className={styles.container}>
+          <FadeIn>
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionNumber}>03.</span>
+              <h2 className={styles.sectionTitle}>PROJECTS</h2>
+            </div>
+          </FadeIn>
+
+          <BentoGrid className={bentoStyles.masonryGrid}>
+            {mappedProjects.map((project, index) => (
+              <FadeIn key={index} delay={0.1 * (index + 1)}>
+                <BentoItem span="third" height="auto">
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.projectCard}
+                  >
+                    <div className={styles.projectImageWrapper}>
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className={styles.projectImage}
+                      />
+                    </div>
+                    <div className={styles.projectContent}>
+                      <div className={styles.projectHeader}>
+                        <h3 className={styles.projectTitle}>{project.title}</h3>
+                        <span className={styles.projectArrow}>↗</span>
+                      </div>
+                      <div className={styles.projectDescription} dangerouslySetInnerHTML={{ __html: project.description }} />
+                      <div className={styles.tags}>
+                        {project.tags.map((tag, i) => (
+                          <span key={i} className={styles.tag}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </a>
+                </BentoItem>
+              </FadeIn>
+            ))}
+          </BentoGrid>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className={styles.section} id="contact">
+        <div className={styles.container}>
+          <FadeIn>
+            <div className={styles.contactSection}>
+              <h2 className={styles.contactTitle}>LET&apos;S WORK TOGETHER</h2>
+              <p className={styles.contactSubtitle}>
+                I&apos;m always open to discussing new opportunities, collaborations, or exchanging ideas about architecture and technology.
+              </p>
+              <div className={styles.contactLinks}>
+                <a
+                  href="https://github.com/jonathantyar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.contactLink}
+                >
+                  GitHub →
+                </a>
+                <a
+                  href="https://gitlab.com/jonathantyar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.contactLink}
+                >
+                  Gitlab →
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/jonathantyar/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.contactLink}
+                >
+                  LinkedIn →
+                </a>
+                <a
+                  href="https://wa.me/6281229480866"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.contactLink}
+                >
+                  WhatsApp →
+                </a>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <p className={styles.footerText}>
+            © {new Date().getFullYear()} {bio.name}. Built with Next.js and passion for clean code.
+          </p>
+        </div>
+      </footer>
+
+      {/* Floating Navigation */}
+      <FloatingNav />
+    </main>
   );
 }
