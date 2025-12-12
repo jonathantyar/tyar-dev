@@ -12,6 +12,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Jonathan Tyar | Senior Full Stack Engineer",
   description: "Portfolio of Jonathan Tyar, an experienced Full Stack Engineer specializing in financial technology and web development. Expertise in React, Next.js, Node.js, and microservices architecture.",
+  icons: "/logo.ico",
   keywords: [
     "Jonathan Tyar",
     "Full Stack Engineer",
@@ -22,7 +23,10 @@ export const metadata: Metadata = {
     "Financial Technology",
     "Fintech Developer",
     "Software Engineer",
-    "Portfolio"
+    "Portfolio",
+    "Crypto Developer",
+    "Blockchain Developer",
+    "Web3 Developer",
   ],
   authors: [{ name: "Jonathan Tyar" }],
   creator: "Jonathan Tyar",
@@ -36,7 +40,7 @@ export const metadata: Metadata = {
     siteName: "Jonathan Tyar Portfolio",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og.webp",
         width: 1200,
         height: 630,
         alt: "Jonathan Tyar Portfolio",
@@ -47,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Jonathan Tyar | Senior Full Stack Engineer",
     description: "Portfolio of Jonathan Tyar, an experienced Full Stack Engineer specializing in financial technology and web development.",
-    images: ["/og-image.png"],
+    images: ["/og.webp"],
   },
   robots: {
     index: true,
@@ -59,9 +63,6 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
-  },
-  verification: {
-    google: "your-google-verification-code",
   },
 };
 
